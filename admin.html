@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Painel BLACKOUT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+<style>
+:root{
+  --breu:#000000;
+  --superficie:#15130F;
+  --campo:#1E1B17;
+  --linha:#2E2A25;
+  --filamento:#FFE3B3;
+  --brasa:#FF9F43;
+  --apagado:#3A3632;
+  --fumaca:#8C857C;
+  --texto:#E6DCCD;
+  --perigo:#F2A08B;
+  --fonte:'Archivo','Arial Narrow',Arial,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--breu)}
+body{min-height:100vh;color:var(--texto);font-family:var(--fonte);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+[hidden]{display:none !important}
+h2{font-weight:800;font-stretch:75%;font-size:1.5rem;line-height:1.1;color:var(--filamento);margin-bottom:1.25rem}
+h3{font-weight:700;font-size:1rem}
+a{color:var(--filamento)}
+
+.botao{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:2.5rem;padding:0 1rem;border:1px solid var(--linha);border-radius:.375rem;background:var(--campo);color:var(--texto);font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.botao:hover:not(:disabled){border-color:var(--fumaca)}
+.botao:focus-visible,.campo input:focus-visible,.campo textarea:focus-visible,.tema input:focus-visible,.tema textarea:focus-visible{outline:2px solid var(--filamento);outline-offset:2px}
+.botao:disabled{opacity:.35;cursor:default}
+.botao.primario{background:var(--filamento);border-color:var(--filamento);color:#000;font-weight:800}
+.botao.fantasma{background:transparent}
+.botao.grande{min-height:3.25rem;font-size:1.05rem}
+.dica{color:var(--fumaca);font-size:.875rem}
+
+/* Campos */
+.campo{display:flex;flex-direction:column;gap:.35rem;font-weight:600}
+.campo input,.campo textarea,.tema input,.tema textarea{width:100%;padding:.6rem .75rem;border:1px solid var(--linha);border-radius:.375rem;background:var(--campo);color:var(--texto);font:inherit;font-weight:400}
+textarea{resize:vertical}
+.campo+.campo,.campo+.linha-campos,.linha-campos+fieldset,.campo+fieldset{margin-top:1.1rem}
+.linha-campos{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:end}
+.linha-campos>.campo+.campo{margin-top:0}
+
+/* Barra */
+.barra{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:.85rem 1.5rem;background:var(--breu);border-bottom:1px solid var(--linha)}
+.barra-titulo{display:flex;align-items:center;gap:1rem}
+.marca-pequena{font-weight:900;font-stretch:62%;font-size:1.9rem;line-height:1;color:var(--filamento);text-transform:uppercase}
+.status{padding:.2rem .65rem;border-radius:1rem;border:1px solid var(--linha);color:var(--fumaca);font-size:.85rem;font-weight:600}
+.status.ao-vivo{border-color:var(--filamento);color:var(--filamento)}
+.barra-acoes{display:flex;gap:1rem;flex-wrap:wrap;align-items:center}
+
+/* Grade */
+.grade{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:1.5rem;padding:1.5rem;max-width:1400px;margin:0 auto;align-items:start}
+.coluna{background:var(--superficie);border:1px solid var(--linha);border-radius:.6rem;padding:1.5rem}
+.ao-vivo{position:sticky;top:5rem}
+@media (max-width:1000px){.grade{grid-template-columns:1fr}.ao-vivo{position:static}}
+
+/* Temas */
+.temas-cabeca{display:flex;justify-content:space-between;align-items:baseline;margin-top:1.4rem;font-weight:600}
+#lista-temas{display:flex;flex-direction:column;gap:.6rem;margin:.6rem 0 .8rem}
+.tema{display:grid;grid-template-columns:5rem 1fr auto;gap:.75rem;align-items:start;padding:.75rem;border:1px solid var(--linha);border-radius:.375rem;background:var(--breu)}
+.tema.vence{border-color:var(--filamento);box-shadow:0 0 0 1px var(--filamento) inset}
+.tema-vence{display:flex;align-items:center;gap:.4rem;padding-top:.6rem;font-size:.9rem;font-weight:600;color:var(--fumaca);cursor:pointer}
+.tema.vence .tema-vence{color:var(--filamento)}
+.tema-campos{display:flex;flex-direction:column;gap:.45rem}
+.tema-nome{font-weight:700 !important}
+input[type=radio],input[type=checkbox]{accent-color:var(--filamento);width:1rem;height:1rem}
+
+fieldset{border:0;margin-top:1.1rem}
+legend{font-weight:600;margin-bottom:.4rem}
+fieldset label{display:flex;align-items:center;gap:.55rem;padding:.25rem 0;cursor:pointer}
+.salvar-linha{display:flex;align-items:center;gap:1rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--linha)}
+
+/* Ao vivo */
+.estado-grande{font-weight:800;font-stretch:75%;font-size:1.9rem;line-height:1.1;color:var(--texto)}
+.relogio-admin{font-weight:900;font-stretch:62%;font-size:5.5rem;line-height:.9;color:var(--filamento);font-variant-numeric:tabular-nums;margin-top:.4rem}
+.programado{margin-top:.6rem;color:var(--fumaca)}
+.programado strong{color:var(--filamento)}
+.controles{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:1.25rem}
+.controles .grande{grid-column:1/-1}
+.votos{margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid var(--linha)}
+.votos-cabeca{display:flex;justify-content:space-between;align-items:baseline}
+#votos-total{font-weight:800;font-size:1.4rem;font-variant-numeric:tabular-nums;color:var(--filamento)}
+#votos-info{margin-top:.2rem}
+#votos-info.ruim{color:var(--perigo)}
+#barras{display:flex;flex-direction:column;gap:.7rem;margin-top:1rem}
+.barra-voto-topo{display:flex;justify-content:space-between;gap:1rem;font-size:.92rem}
+.barra-voto-topo span:last-child{color:var(--fumaca);font-variant-numeric:tabular-nums}
+.barra-voto-trilho{height:.5rem;margin-top:.25rem;border-radius:.25rem;background:var(--campo);overflow:hidden}
+.barra-voto-cheio{height:100%;background:var(--fumaca);border-radius:.25rem;transition:width .4s ease}
+.barra-voto.programada .barra-voto-cheio{background:var(--filamento)}
+.salvo-auto{margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--linha)}
+.link-bloco{margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid var(--linha)}
+.link-bloco .dica{margin-top:.2rem}
+.link-linha{display:flex;gap:.5rem;margin-top:.75rem}
+.link-linha input{flex:1;min-width:0;padding:.6rem .75rem;border:1px solid var(--linha);border-radius:.375rem;background:var(--campo);color:var(--fumaca);font:inherit;font-size:.85rem}
+.hora{margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid var(--linha)}
+.hora strong{color:var(--filamento);font-variant-numeric:tabular-nums}
+.programado{min-height:1.5em}
+.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);max-width:min(36rem,90vw);padding:.75rem 1.1rem;border-radius:.5rem;background:var(--filamento);color:#000;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.visivel{opacity:1}
+.toast.ruim{background:var(--perigo)}
+</style>
+</head>
+<body>
+
+<div id="tela-painel">
+  <header class="barra">
+    <div class="barra-titulo">
+      <span class="marca-pequena" id="barra-titulo">BLACKOUT</span>
+      <span class="status" id="status-pill">Aguardando</span>
+    </div>
+    <div class="barra-acoes">
+      <span class="dica" id="telao-status">Telão fechado</span>
+      <button class="botao primario" type="button" id="btn-telao">Abrir telão</button>
+    </div>
+  </header>
+
+  <main class="grade">
+    <section class="coluna" aria-labelledby="t-config">
+      <h2 id="t-config">Configuração</h2>
+      <label class="campo">Nome do culto<input id="cfg-titulo" maxlength="24"></label>
+      <label class="campo">Pergunta da votação<input id="cfg-chamada" maxlength="90"></label>
+
+      <div class="temas-cabeca"><span>Temas</span><span class="dica">Marque qual vai vencer</span></div>
+      <div id="lista-temas"></div>
+      <button class="botao" type="button" id="btn-add-tema">Adicionar tema</button>
+
+      <div class="linha-campos" style="margin-top:1.4rem">
+        <label class="campo">Duração da votação (segundos)<input id="cfg-duracao" type="number" min="10" max="1800" step="5" inputmode="numeric"></label>
+        <label class="campo">Suspense antes de revelar (s)<input id="cfg-suspense" type="number" min="0" max="60" step="1" inputmode="numeric"></label>
+      </div>
+
+      <label class="campo" style="margin-top:1.1rem">Frase depois do voto<textarea id="cfg-frase" rows="2" maxlength="160"></textarea></label>
+
+      <fieldset>
+        <legend>No telão</legend>
+        <label><input type="checkbox" id="cfg-contagem"> Mostrar quantos já votaram</label>
+      </fieldset>
+
+      <label class="campo" style="margin-top:1.1rem">Endereço da página de votação<input id="cfg-link" type="url" spellcheck="false"></label>
+      <label class="campo" style="margin-top:1.1rem">Senha do Apps Script<input id="cfg-senha" type="password" autocomplete="off" spellcheck="false"></label>
+      <p class="dica" style="margin-top:.35rem">A mesma que está na linha <code>const SENHA</code> do apps-script.gs.</p>
+
+      <p class="dica salvo-auto">Tudo é salvo sozinho neste navegador. Mudanças valem para a próxima votação que você abrir.</p>
+      <p class="dica" id="script-info"></p>
+    </section>
+
+    <section class="coluna ao-vivo" aria-labelledby="t-vivo">
+      <h2 id="t-vivo">Ao vivo</h2>
+      <p class="estado-grande" id="estado-grande">Aguardando</p>
+      <p class="relogio-admin" id="relogio-admin">--:--</p>
+      <p class="programado" id="programado"></p>
+
+      <div class="controles">
+        <button class="botao primario grande" type="button" id="btn-abrir">Abrir votação</button>
+        <button class="botao" type="button" id="btn-apagar">Apagar telão</button>
+        <button class="botao" type="button" id="btn-inicio">Voltar ao início</button>
+      </div>
+
+      <div class="votos">
+        <div class="votos-cabeca"><h3>Votos na planilha</h3><span id="votos-total">0</span></div>
+        <p class="dica" id="votos-info">Os votos aparecem aqui quando a votação abrir.</p>
+        <div id="barras"></div>
+      </div>
+
+      <div class="link-bloco">
+        <h3>Link para o grupo</h3>
+        <p class="dica">Pode mandar antes do culto. Quem abrir vê "Aguardando o líder…" até você abrir a votação.</p>
+        <div class="link-linha">
+          <input id="link-atual" readonly aria-label="Link para o grupo">
+          <button class="botao" type="button" id="btn-copiar">Copiar</button>
+        </div>
+      </div>
+
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<template id="tpl-tema">
+  <div class="tema">
+    <label class="tema-vence"><input type="radio" name="vencedor"> Vence</label>
+    <div class="tema-campos">
+      <input class="tema-nome" type="text" maxlength="40" placeholder="Nome do tema" aria-label="Nome do tema">
+      <textarea class="tema-desc" rows="2" maxlength="160" placeholder="Descrição curta. Aparece no telão quando o tema for revelado." aria-label="Descrição do tema"></textarea>
+    </div>
+    <button class="botao fantasma tema-remover" type="button">Remover</button>
+  </div>
+</template>
+
+<script src="../config.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (s) { return document.querySelector(s); };
+
+  var guarda = {
+    ler: function (k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+    gravar: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+  var novoId = function () { return "t" + Math.random().toString(36).slice(2, 10); };
+
+  function padrao() {
+    var temas = [
+      { id: novoId(), nome: "Sexo", descricao: "O que ninguém conversa com você de verdade." },
+      { id: novoId(), nome: "Drogas", descricao: "Por que parece tão fácil começar." },
+      { id: novoId(), nome: "Ansiedade", descricao: "Quando a cabeça não desliga." },
+      { id: novoId(), nome: "Propósito", descricao: "Pra que eu estou aqui?" }
+    ];
+    return {
+      titulo: "BLACKOUT",
+      chamada: "Qual assunto vamos encarar hoje?",
+      temas: temas,
+      vencedor: temas[0].id,
+      duracaoSeg: 60,
+      suspenseSeg: 5,
+      frase: "A luz brilha no escuro, e o escuro não consegue apagá-la. (João 1:5)",
+      contagem: true,
+      senha: "",
+      link: "https://midiaatos.github.io/blackout/"
+    };
+  }
+
+  var config = guarda.ler("blackout_config") || padrao();
+  if (config.duracaoSeg === undefined) config.duracaoSeg = config.duracaoMin ? Math.round(config.duracaoMin * 60) : 60;
+  if (config.frase === undefined) config.frase = padrao().frase;
+  if (config.contagem === undefined) config.contagem = true;
+  if (config.senha === undefined) config.senha = "";
+  var URL_SCRIPT = (window.BLACKOUT_APPS_SCRIPT || "").trim();
+  var TEM_SCRIPT = /^https:\/\/script\.google\.com\//.test(URL_SCRIPT);
+  var votos = { rodada: "", total: null, cont: {} };
+  var sessao = guarda.ler("blackout_sessao") || { fase: "aguardando", apagado: false };
+  var telao = null;
+  var ultimoPing = 0;
+
+  // ---------- utilidades ----------
+  function formatar(ms) {
+    var s = Math.max(0, Math.ceil(ms / 1000));
+    return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  }
+  var toastTimer;
+  function toast(msg, ruim) {
+    var t = $("#toast");
+    t.textContent = msg; t.classList.toggle("ruim", !!ruim); t.classList.add("visivel");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("visivel"); }, ruim ? 5000 : 2500);
+  }
+  // ---------- formulário ----------
+  function preencher() {
+    $("#cfg-titulo").value = config.titulo;
+    $("#cfg-chamada").value = config.chamada;
+    $("#cfg-duracao").value = config.duracaoSeg;
+    $("#cfg-frase").value = config.frase;
+    $("#cfg-contagem").checked = config.contagem !== false;
+    $("#cfg-suspense").value = config.suspenseSeg;
+    $("#cfg-senha").value = config.senha || "";
+    $("#cfg-link").value = config.link;
+    desenharTemas();
+  }
+
+  function desenharTemas() {
+    var lista = $("#lista-temas");
+    lista.textContent = "";
+    var tpl = $("#tpl-tema");
+    config.temas.forEach(function (t) {
+      var linha = tpl.content.firstElementChild.cloneNode(true);
+      linha.dataset.id = t.id;
+      linha.classList.toggle("vence", config.vencedor === t.id);
+      var radio = linha.querySelector("input[type=radio]");
+      radio.value = t.id; radio.checked = config.vencedor === t.id;
+      linha.querySelector(".tema-nome").value = t.nome || "";
+      linha.querySelector(".tema-desc").value = t.descricao || "";
+      lista.appendChild(linha);
+    });
+  }
+
+  function lerForm() {
+    config.titulo = $("#cfg-titulo").value;
+    config.chamada = $("#cfg-chamada").value;
+    config.duracaoSeg = $("#cfg-duracao").value;
+    config.frase = $("#cfg-frase").value;
+    config.contagem = $("#cfg-contagem").checked;
+    config.suspenseSeg = $("#cfg-suspense").value;
+    config.senha = $("#cfg-senha").value;
+    config.link = $("#cfg-link").value;
+    guarda.gravar("blackout_config", config);
+    pintar();
+  }
+
+  $("#lista-temas").addEventListener("input", function (ev) {
+    var linha = ev.target.closest(".tema"); if (!linha) return;
+    var t = config.temas.find(function (x) { return x.id === linha.dataset.id; }); if (!t) return;
+    if (ev.target.classList.contains("tema-nome")) t.nome = ev.target.value;
+    if (ev.target.classList.contains("tema-desc")) t.descricao = ev.target.value;
+    guarda.gravar("blackout_config", config);
+    pintar();
+  });
+  $("#lista-temas").addEventListener("change", function (ev) {
+    if (ev.target.name !== "vencedor") return;
+    config.vencedor = ev.target.value;
+    document.querySelectorAll(".tema").forEach(function (l) { l.classList.toggle("vence", l.dataset.id === config.vencedor); });
+    guarda.gravar("blackout_config", config);
+    pintar();
+  });
+  $("#lista-temas").addEventListener("click", function (ev) {
+    var b = ev.target.closest(".tema-remover"); if (!b) return;
+    var id = b.closest(".tema").dataset.id;
+    config.temas = config.temas.filter(function (t) { return t.id !== id; });
+    if (config.vencedor === id) config.vencedor = config.temas[0] ? config.temas[0].id : null;
+    guarda.gravar("blackout_config", config);
+    desenharTemas(); pintar();
+  });
+  $("#btn-add-tema").addEventListener("click", function () {
+    config.temas.push({ id: novoId(), nome: "", descricao: "" });
+    guarda.gravar("blackout_config", config);
+    desenharTemas();
+    var ult = $("#lista-temas").lastElementChild; if (ult) ult.querySelector(".tema-nome").focus();
+  });
+  ["#cfg-titulo", "#cfg-chamada", "#cfg-duracao", "#cfg-suspense", "#cfg-link", "#cfg-frase", "#cfg-senha"].forEach(function (s) { $(s).addEventListener("input", lerForm); });
+  $("#cfg-contagem").addEventListener("change", lerForm);
+
+  // ---------- telão ----------
+  function estadoParaTelao() {
+    if (sessao.fase === "aberta" && sessao.dados) {
+      var d = sessao.dados;
+      var total = (votos.rodada === d.id && config.contagem !== false && votos.total !== null) ? votos.total : null;
+      return { fase: "aberta", apagado: !!sessao.apagado, id: d.id, titulo: d.titulo, chamada: d.chamada, temas: d.temas, vencedor: d.vencedor, fimMs: d.fimMs, suspenseSeg: d.suspenseSeg, qr: false, total: total };
+    }
+    return { fase: "aguardando", apagado: !!sessao.apagado, titulo: (config.titulo || "").trim() || "BLACKOUT" };
+  }
+  function enviar() {
+    var est = estadoParaTelao();
+    guarda.gravar("blackout_estado", est);
+    if (telao && !telao.closed) { try { telao.postMessage({ tipo: "blackout-estado", estado: est }, "*"); } catch (e) {} }
+  }
+  window.addEventListener("message", function (e) {
+    if (e.data && e.data.tipo === "blackout-ping") { telao = e.source; ultimoPing = Date.now(); enviar(); }
+  });
+  $("#btn-telao").addEventListener("click", function () {
+    telao = window.open("telao.html", "blackout-telao", "popup=yes,width=1280,height=720");
+    if (!telao) toast("O navegador bloqueou a janela. Permita pop-ups para este arquivo.", true);
+  });
+
+  function salvarSessao() { guarda.gravar("blackout_sessao", sessao); enviar(); pintar(); }
+
+  // ---------- controles ----------
+  function validar() {
+    var erro = function (m) { toast(m, true); return null; };
+    var temas = config.temas.map(function (t) { return { id: t.id, nome: (t.nome || "").trim(), descricao: (t.descricao || "").trim() }; });
+    if (temas.length < 2) return erro("Cadastre pelo menos dois temas.");
+    if (temas.some(function (t) { return !t.nome; })) return erro("Dê nome a todos os temas ou remova os vazios.");
+    var w = temas.findIndex(function (t) { return t.id === config.vencedor; });
+    if (w < 0) return erro("Marque qual tema vai vencer.");
+    var seg = Math.round(Number(String(config.duracaoSeg).replace(",", ".")));
+    if (!(seg >= 10)) return erro("A duração precisa ter pelo menos 10 segundos.");
+    return {
+      temas: temas, w: w,
+      duracaoSeg: seg,
+      frase: (config.frase || "").trim(),
+      suspenseSeg: Math.min(60, Math.max(0, Math.round(Number(config.suspenseSeg) || 0))),
+      titulo: (config.titulo || "").trim() || "BLACKOUT",
+      chamada: (config.chamada || "").trim() || "Qual assunto vamos encarar hoje?"
+    };
+  }
+
+  function postarScript(corpo) {
+    return fetch(URL_SCRIPT, { method: "POST", body: JSON.stringify(corpo), redirect: "follow" }).then(function (r) { return r.json(); });
+  }
+  function erroScript(j) {
+    if (j && j.erro === "senha") toast("A senha do painel não é a mesma do Apps Script.", true);
+    else toast("Não consegui falar com o Apps Script. Confira a internet e tente de novo.", true);
+  }
+
+  var abrindo = false;
+  $("#btn-abrir").addEventListener("click", function () {
+    if (abrindo) return;
+    if (!TEM_SCRIPT) { toast("Configure o endereço do Apps Script no config.js.", true); return; }
+    var v = validar(); if (!v) return;
+    if (fase() === "aberta" && !confirm("Já tem uma votação aberta. Começar outra do zero?")) return;
+    var id = Math.random().toString(36).slice(2, 8);
+    var b = $("#btn-abrir");
+    abrindo = true; b.disabled = true; b.textContent = "Abrindo…";
+    var t0 = Date.now();
+    postarScript({ acao: "abrir", senha: config.senha || "", rodada: id, titulo: v.titulo, chamada: v.chamada, frase: v.frase, temas: v.temas.map(function (t) { return t.nome; }), duracaoSeg: v.duracaoSeg })
+      .then(function (j) {
+        if (!j || !j.ok || !j.estado) { erroScript(j); return; }
+        var desvio = j.agora - (t0 + Date.now()) / 2;    // relógio do Google menos o do notebook
+        sessao = {
+          fase: "aberta", apagado: false,
+          dados: {
+            id: id, titulo: v.titulo, chamada: v.chamada,
+            temas: v.temas.map(function (t) { return { nome: t.nome, descricao: t.descricao }; }),
+            vencedor: v.w, fimMs: Math.round(j.estado.fim - desvio), suspenseSeg: v.suspenseSeg
+          }
+        };
+        votos = { rodada: id, total: 0, cont: {} };
+        salvarSessao();
+        toast("Votação aberta.");
+      })
+      .catch(function () { erroScript(null); })
+      .then(function () { abrindo = false; b.disabled = false; pintar(); });
+  });
+  $("#btn-apagar").addEventListener("click", function () { sessao.apagado = !sessao.apagado; salvarSessao(); });
+  $("#btn-inicio").addEventListener("click", function () {
+    if (fase() !== "aguardando" && !confirm("Voltar o telão para a tela inicial? A votação atual é encerrada.")) return;
+    sessao = { fase: "aguardando", apagado: !!sessao.apagado };
+    salvarSessao();
+    if (TEM_SCRIPT) postarScript({ acao: "parar", senha: config.senha || "" }).then(function (j) { if (!j || !j.ok) erroScript(j); }).catch(function () { erroScript(null); });
+  });
+  $("#btn-copiar").addEventListener("click", function () {
+    var campo = $("#link-atual");
+    var ok = function () { toast("Link copiado."); };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(campo.value).then(ok, function () { campo.select(); document.execCommand("copy"); ok(); });
+    else { campo.select(); document.execCommand("copy"); ok(); }
+  });
+
+  function linkBase() {
+    var link = (config.link || "").trim().replace(/#.*$/, "");
+    if (link && !/\/$|\.html$/.test(link)) link += "/";
+    return link;
+  }
+  function infoScript() {
+    var el = $("#script-info");
+    el.textContent = TEM_SCRIPT ? "Apps Script configurado no config.js." : "Apps Script não configurado no config.js. Sem ele a votação não abre nos celulares.";
+    el.style.color = TEM_SCRIPT ? "" : "var(--perigo)";
+  }
+
+  // ---------- painel ao vivo ----------
+  function fase() {
+    if (sessao.fase !== "aberta" || !sessao.dados) return "aguardando";
+    var agora = Date.now(), d = sessao.dados;
+    if (agora < d.fimMs) return "aberta";
+    if (agora < d.fimMs + d.suspenseSeg * 1000) return "tempo";
+    return "revelada";
+  }
+  var NOMES = { aguardando: "Aguardando", aberta: "Votação aberta", tempo: "Tempo esgotado", revelada: "Resultado revelado" };
+
+  function pintar() {
+    var f = fase();
+    $("#estado-grande").textContent = NOMES[f];
+    $("#status-pill").textContent = NOMES[f];
+    $("#status-pill").classList.toggle("ao-vivo", f === "aberta");
+    $("#barra-titulo").textContent = (config.titulo || "").trim() || "BLACKOUT";
+
+    var prog = $("#programado");
+    prog.textContent = "";
+    var nome;
+    if (sessao.fase === "aberta" && sessao.dados) {
+      nome = sessao.dados.temas[sessao.dados.vencedor].nome;
+      prog.appendChild(document.createTextNode(f === "revelada" ? "Revelado: " : "Vai vencer: "));
+    } else {
+      var t = config.temas.find(function (x) { return x.id === config.vencedor; });
+      nome = t && t.nome ? t.nome : "nenhum tema marcado";
+      prog.appendChild(document.createTextNode("Vai vencer: "));
+    }
+    var forte = document.createElement("strong"); forte.textContent = nome; prog.appendChild(forte);
+
+    $("#btn-abrir").textContent = f === "aguardando" ? "Abrir votação" : "Abrir nova votação";
+    $("#btn-apagar").textContent = sessao.apagado ? "Acender telão" : "Apagar telão";
+    $("#btn-inicio").disabled = f === "aguardando";
+    $("#link-atual").value = linkBase();
+    pintarVotos();
+  }
+
+  var ultimaFase = "";
+  function ciclo() {
+    var f = fase();
+    if (f !== ultimaFase) { ultimaFase = f; pintar(); }
+    $("#relogio-admin").textContent = f === "aberta" ? formatar(sessao.dados.fimMs - Date.now()) : f === "aguardando" ? "--:--" : "0:00";
+    var conectado = (telao && !telao.closed) || Date.now() - ultimoPing < 2500;
+    $("#telao-status").textContent = conectado ? "Telão conectado" : "Telão fechado";
+  }
+
+  // ---------- votos da planilha ----------
+  function pintarVotos() {
+    var info = $("#votos-info");
+    info.classList.remove("ruim");
+    $("#votos-total").textContent = votos.total === null ? "–" : votos.total;
+    var caixa = $("#barras");
+    caixa.textContent = "";
+    if (!TEM_SCRIPT) {
+      info.textContent = "Apps Script não configurado no config.js. A votação funciona, mas os votos não vão para a planilha.";
+      info.classList.add("ruim");
+      return;
+    }
+    var d = sessao.fase === "aberta" ? sessao.dados : null;
+    if (!d) { info.textContent = "Os votos aparecem aqui quando a votação abrir."; return; }
+    if (votos.erro) { info.textContent = "Não consegui ler a planilha agora. Tentando de novo."; info.classList.add("ruim"); }
+    else info.textContent = "Só aparecem aqui. Atualiza a cada poucos segundos.";
+    var total = votos.total || 0;
+    d.temas.forEach(function (t, i) {
+      var n = votos.cont[t.nome] || 0;
+      var pct = total ? Math.round(n / total * 100) : 0;
+      var linha = document.createElement("div");
+      linha.className = "barra-voto" + (i === d.vencedor ? " programada" : "");
+      var topo = document.createElement("div"); topo.className = "barra-voto-topo";
+      var nome = document.createElement("span"); nome.textContent = t.nome + (i === d.vencedor ? " (vai vencer)" : "");
+      var num = document.createElement("span"); num.textContent = n + (n === 1 ? " voto" : " votos") + " (" + pct + "%)";
+      topo.appendChild(nome); topo.appendChild(num);
+      var trilho = document.createElement("div"); trilho.className = "barra-voto-trilho";
+      var cheio = document.createElement("div"); cheio.className = "barra-voto-cheio"; cheio.style.width = pct + "%";
+      trilho.appendChild(cheio);
+      linha.appendChild(topo); linha.appendChild(trilho);
+      caixa.appendChild(linha);
+    });
+  }
+
+  function buscarVotos() {
+    var d = sessao.fase === "aberta" ? sessao.dados : null;
+    // Lê enquanto a votação está aberta e até 2 minutos depois do fim
+    if (!TEM_SCRIPT || !d || Date.now() > d.fimMs + 120000) { setTimeout(buscarVotos, 4000); return; }
+    var rodada = d.id;
+    fetch(URL_SCRIPT + "?acao=contagem&rodada=" + encodeURIComponent(rodada) + "&_=" + Date.now(), { redirect: "follow" })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j || !j.ok) throw new Error("resposta");
+        if (sessao.dados && sessao.dados.id === rodada) { votos = { rodada: rodada, total: j.total, cont: j.cont || {} }; enviar(); pintarVotos(); }
+      })
+      .catch(function () { votos.erro = true; pintarVotos(); })
+      .then(function () { setTimeout(buscarVotos, 4000); });
+  }
+
+  window.addEventListener("storage", function (e) {
+    if (e.key === "blackout_sessao" && e.newValue) { try { sessao = JSON.parse(e.newValue); pintar(); } catch (x) {} }
+  });
+
+  if (sessao.fase === "aberta" && sessao.dados) votos = { rodada: sessao.dados.id, total: TEM_SCRIPT ? 0 : null, cont: {} };
+  preencher();
+  infoScript();
+  pintar();
+  enviar();
+  buscarVotos();
+  setInterval(ciclo, 250);
+  setInterval(enviar, 1000);
+})();
+</script>
+</body>
+</html>

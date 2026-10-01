@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>BLACKOUT — telão</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+<style>
+:root{
+  --breu:#000000;
+  --filamento:#FFE3B3;
+  --brasa:#FF9F43;
+  --apagado:#3A3632;
+  --fumaca:#8C857C;
+  --texto:#E6DCCD;
+  --fonte:'Archivo','Arial Narrow',Impact,Arial,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--breu);overflow:hidden}
+body{color:var(--texto);font-family:var(--fonte);-webkit-font-smoothing:antialiased;user-select:none}
+body.sem-cursor,body.sem-cursor *{cursor:none}
+
+.cena{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:5vh 6vw;text-align:center}
+.cena.ativa{display:flex}
+
+.logo{display:block;width:auto;object-fit:contain}
+.logo-texto{font-weight:600;color:var(--fumaca)}
+
+/* O nome que brilha */
+.marca{position:relative;z-index:0;font-weight:900;font-stretch:62%;line-height:.82;color:var(--filamento);text-transform:uppercase;text-shadow:0 0 .015em rgba(255,240,215,.7)}
+.marca::after{content:attr(data-texto);position:absolute;inset:0;z-index:-1;color:transparent;text-shadow:0 0 .05em var(--brasa),0 0 .22em rgba(255,159,67,.55),0 0 .55em rgba(255,159,67,.28);opacity:.4;animation:pulso 2.6s ease-in-out infinite;will-change:opacity;pointer-events:none}
+.piscar{animation:piscar .7s linear 1}
+
+/* Aguardando */
+#cena-aguardando .logo{height:9vh;max-width:40vw;margin-bottom:6vh}
+#cena-aguardando .logo-texto{font-size:4vh;margin-bottom:5vh}
+#cena-aguardando .marca{font-size:min(20vw,40vh);max-width:100%}
+
+/* Votação aberta */
+#cena-votacao{justify-content:space-between}
+.votacao-topo{display:flex;align-items:center;justify-content:center;gap:2.5vw}
+.votacao-topo .logo{height:5.5vh;max-width:22vw}
+.votacao-topo .logo-texto{font-size:3vh}
+.votacao-topo .marca{font-size:10vh}
+.votacao-meio{display:flex;flex-direction:column;align-items:center;gap:3.5vh}
+.chamada{font-weight:800;font-stretch:78%;font-size:7.5vh;line-height:1.04;color:var(--texto);max-width:24ch;text-wrap:balance}
+.temas-telao{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:1vh 3.2vw;font-weight:600;font-stretch:80%;font-size:4.2vh;color:var(--fumaca);max-width:80vw}
+.votacao-base{width:100%;display:flex;justify-content:center}
+.relogio-bloco{text-align:center}
+.relogio{font-weight:900;font-stretch:62%;font-size:30vh;line-height:.78;font-variant-numeric:tabular-nums;color:var(--filamento)}
+.relogio.reta-final{animation:batida .5s ease-in-out infinite}
+.contagem{margin-top:2vh;font-size:3.6vh;color:var(--fumaca);font-variant-numeric:tabular-nums}
+.contagem[hidden]{display:none}
+
+/* Tempo esgotado */
+#cena-tempo .marca{font-size:min(15vw,22vh);max-width:100%}
+.apurando{margin-top:5vh;font-size:4.2vh;color:var(--fumaca);animation:respirar 2.2s ease-in-out infinite}
+
+/* Roleta */
+.roleta{font-weight:900;font-stretch:62%;font-size:20vh;line-height:.9;color:var(--filamento);text-transform:uppercase;max-width:90vw;text-wrap:balance}
+.roleta.flash{animation:flash .14s ease-out 1}
+
+/* Resultado */
+.rotulo{font-size:4.6vh;color:var(--fumaca);margin-bottom:4vh}
+.vencedor{font-size:var(--tam,24vh);max-width:92vw;text-wrap:balance}
+.vencedor-desc{margin-top:5vh;font-size:4.4vh;line-height:1.35;color:var(--texto);max-width:42ch;text-wrap:balance}
+#cena-resultado.acender .vencedor{animation:aquecer 1.9s linear both}
+#cena-resultado.acender .vencedor::after{animation:brilhoEntra 1.9s ease-in both,pulso 2.6s ease-in-out 1.9s infinite}
+#cena-resultado.acender .rotulo{animation:surgir .7s ease-out 1.7s both}
+#cena-resultado.acender .vencedor-desc{animation:surgir .9s ease-out 2.1s both}
+
+/* Cortinas: blecaute da revelação e "apagar telão" do painel */
+.cortina{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none}
+#blecaute{z-index:50}
+#cortina{z-index:60}
+.cortina.fechada{opacity:1}
+.cortina.abrindo{animation:religar 1.7s linear both}
+.cortina.aberta{opacity:0}
+
+@keyframes pulso{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes piscar{0%,9%{opacity:1}10%,17%{opacity:.2}18%,32%{opacity:1}33%,39%{opacity:.55}40%,100%{opacity:1}}
+@keyframes religar{0%{opacity:1}8%{opacity:1}9%{opacity:.35}13%{opacity:1}24%{opacity:1}25%{opacity:.12}29%{opacity:.85}41%{opacity:0}44%{opacity:.6}47%{opacity:0}100%{opacity:0}}
+@keyframes batida{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes respirar{0%,100%{opacity:.45}50%{opacity:1}}
+@keyframes flash{from{opacity:.25}to{opacity:1}}
+@keyframes aquecer{
+  0%{font-weight:100;color:var(--apagado);opacity:0}
+  6%{opacity:1}9%{opacity:.15}14%{opacity:1}20%{opacity:.4}24%{opacity:1}
+  100%{font-weight:900;color:var(--filamento);opacity:1}
+}
+@keyframes brilhoEntra{0%,40%{opacity:0}100%{opacity:.4}}
+@keyframes surgir{from{opacity:0}to{opacity:1}}
+
+@media (prefers-reduced-motion:reduce){
+  .marca::after,#cena-resultado.acender .vencedor::after{animation:none;opacity:.7}
+  .piscar,.relogio.reta-final,.apurando,.roleta.flash,#cena-resultado.acender .vencedor,#cena-resultado.acender .rotulo,#cena-resultado.acender .vencedor-desc{animation:none}
+  .cortina.abrindo{animation:none;opacity:0}
+}
+</style>
+</head>
+<body>
+
+<section class="cena" id="cena-aguardando">
+  <img class="logo" src="../logo-atos-one.png" alt="Atos One">
+  <h1 class="marca js-titulo" data-texto="BLACKOUT">BLACKOUT</h1>
+</section>
+
+<section class="cena" id="cena-votacao">
+  <header class="votacao-topo">
+    <img class="logo" src="../logo-atos-one.png" alt="Atos One">
+    <span class="marca js-titulo" data-texto="BLACKOUT">BLACKOUT</span>
+  </header>
+  <div class="votacao-meio">
+    <h2 class="chamada" id="chamada">Qual assunto vamos encarar hoje?</h2>
+    <ul class="temas-telao" id="temas-telao"></ul>
+  </div>
+  <div class="votacao-base">
+    <div class="relogio-bloco">
+      <p class="relogio" id="relogio">0:00</p>
+      <p class="contagem" id="contagem" hidden></p>
+    </div>
+  </div>
+</section>
+
+<section class="cena" id="cena-tempo">
+  <p class="marca" data-texto="Tempo esgotado">Tempo esgotado</p>
+  <p class="apurando">Contando os votos</p>
+</section>
+
+<section class="cena" id="cena-revelando">
+  <p class="roleta" id="roleta" aria-live="off"></p>
+</section>
+
+<section class="cena" id="cena-resultado">
+  <p class="rotulo">O tema de hoje é</p>
+  <h2 class="marca vencedor" id="vencedor" data-texto=""></h2>
+  <p class="vencedor-desc" id="vencedor-desc"></p>
+</section>
+
+
+<div class="cortina" id="blecaute"></div>
+<div class="cortina fechada" id="cortina"></div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (s) { return document.querySelector(s); };
+  var esperar = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  var reduzMovimento = function () { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; };
+
+  var estado = null;
+  var cena = "";
+  var animando = false;
+  var animadoId = "";
+  var apagadoAtual = null;
+
+  // ---------- logo ----------
+  document.querySelectorAll("img.logo").forEach(function (img) {
+    var trocar = function () { var s = document.createElement("span"); s.className = "logo-texto"; s.textContent = "Atos One"; img.replaceWith(s); };
+    if (img.complete && img.naturalWidth === 0) trocar(); else img.addEventListener("error", trocar);
+  });
+
+  function formatar(ms) {
+    var s = Math.max(0, Math.ceil(ms / 1000));
+    return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  }
+
+  function ajustar(el) {
+    if (!el || el.getClientRects().length === 0) return;
+    el.style.fontSize = "";
+    for (var i = 0; i < 4; i++) {
+      if (el.scrollWidth - el.clientWidth <= 1) break;
+      var fs = parseFloat(getComputedStyle(el).fontSize);
+      el.style.fontSize = (fs * el.clientWidth / el.scrollWidth * 0.97) + "px";
+    }
+  }
+  function ajustarCena() {
+    var c = document.querySelector(".cena.ativa");
+    if (c) c.querySelectorAll(".marca, .roleta").forEach(ajustar);
+  }
+
+  function mostrarCena(nome) {
+    if (cena === nome) return;
+    cena = nome;
+    document.querySelectorAll(".cena").forEach(function (c) { c.classList.toggle("ativa", c.id === "cena-" + nome); });
+    ajustarCena();
+  }
+
+  // ---------- textos ----------
+  function aplicarTextos() {
+    var titulo = (estado && estado.titulo) || "BLACKOUT";
+    document.querySelectorAll(".js-titulo").forEach(function (el) {
+      if (el.textContent !== titulo) { el.textContent = titulo; el.dataset.texto = titulo; ajustar(el); }
+    });
+    $("#chamada").textContent = (estado && estado.chamada) || "Qual assunto vamos encarar hoje?";
+    var lista = $("#temas-telao");
+    var nomes = ((estado && estado.temas) || []).map(function (t) { return t.nome; });
+    if (lista.dataset.chave !== nomes.join("|")) {
+      lista.dataset.chave = nomes.join("|");
+      lista.textContent = "";
+      nomes.forEach(function (n) { var li = document.createElement("li"); li.textContent = n; lista.appendChild(li); });
+    }
+    var total = estado && typeof estado.total === "number" ? estado.total : null;
+    var cont = $("#contagem");
+    cont.hidden = total === null;
+    if (total !== null) cont.textContent = total + (total === 1 ? " voto" : " votos");
+  }
+
+  window.addEventListener("resize", ajustarCena);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustarCena);
+
+  // ---------- apagar / acender ----------
+  function aplicarApagado() {
+    var apagado = !!(estado && estado.apagado);
+    if (apagado === apagadoAtual) return;
+    apagadoAtual = apagado;
+    var c = $("#cortina");
+    c.classList.remove("fechada", "abrindo", "aberta");
+    void c.offsetWidth;
+    if (apagado) c.classList.add("fechada");
+    else c.classList.add(reduzMovimento() ? "aberta" : "abrindo");
+  }
+
+  // ---------- revelação ----------
+  function vencedor() { return ((estado && estado.temas) || [])[estado ? estado.vencedor : -1]; }
+
+  function animarRevelacao() {
+    animando = true;
+    var temas = (estado.temas || []).slice();
+    var iV = Math.max(0, estado.vencedor);
+    var n = temas.length, passos = 24;
+    var inicio = (((iV - passos) % n) + n) % n;
+    var el = $("#roleta");
+    var p = 0;
+    var corrida = Promise.resolve();
+    if (n > 1 && !reduzMovimento()) {
+      mostrarCena("revelando");
+      corrida = (function passo() {
+        if (p > passos) return esperar(600);
+        el.textContent = temas[(inicio + p) % n].nome;
+        ajustar(el);
+        el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+        var t = p / passos;
+        p++;
+        return esperar(55 + Math.pow(t, 3) * 430).then(passo);
+      })();
+    }
+    corrida.then(function () {
+      var b = $("#blecaute");
+      b.classList.add("fechada");
+      return esperar(900).then(function () {
+        mostrarResultado(true);
+        b.classList.remove("fechada");
+        animando = false;
+      });
+    });
+  }
+
+  function mostrarResultado(animar) {
+    var t = vencedor();
+    var nome = t ? t.nome : "";
+    var el = $("#vencedor");
+    el.textContent = nome; el.dataset.texto = nome;
+    el.style.setProperty("--tam", nome.length <= 9 ? "26vh" : nome.length <= 16 ? "17vh" : "11vh");
+    $("#vencedor-desc").textContent = (t && t.descricao) || "";
+    var c = $("#cena-resultado");
+    c.classList.remove("acender");
+    mostrarCena("resultado");
+    ajustar(el);
+    if (animar && !reduzMovimento()) { void c.offsetWidth; c.classList.add("acender"); }
+  }
+
+  function ciclo() {
+    if (!estado || animando) return;
+    if (estado.fase !== "aberta") { mostrarCena("aguardando"); return; }
+    var agora = Date.now();
+    var fim = estado.fimMs;
+    var revela = fim + (estado.suspenseSeg || 0) * 1000;
+    if (agora < fim) {
+      mostrarCena("votacao");
+      var r = $("#relogio");
+      r.textContent = formatar(fim - agora);
+      r.classList.toggle("reta-final", fim - agora <= 10000);
+    } else if (agora < revela) {
+      mostrarCena("tempo");
+    } else if (animadoId !== estado.id) {
+      animadoId = estado.id;
+      if (agora - revela < 10000) animarRevelacao(); else mostrarResultado(false);
+    } else if (cena !== "resultado") {
+      mostrarResultado(false);
+    }
+  }
+
+  function receber(novo) {
+    if (!novo) return;
+    estado = novo;
+    aplicarTextos();
+    aplicarApagado();
+    ciclo();
+  }
+
+  // ---------- conversa com o painel ----------
+  window.addEventListener("message", function (e) {
+    if (e.data && e.data.tipo === "blackout-estado") receber(e.data.estado);
+  });
+  function avisarPainel() {
+    try { if (window.opener && !window.opener.closed) window.opener.postMessage({ tipo: "blackout-ping" }, "*"); } catch (e) {}
+  }
+  window.addEventListener("storage", function (e) {
+    if (e.key === "blackout_estado" && e.newValue) { try { receber(JSON.parse(e.newValue)); } catch (x) {} }
+  });
+
+  var inicial = null;
+  try { inicial = JSON.parse(localStorage.getItem("blackout_estado")); } catch (e) {}
+  receber(inicial || { fase: "aguardando", apagado: false });
+  avisarPainel();
+  setInterval(avisarPainel, 1000);
+
+  // ---------- tremida aleatória ----------
+  function tremidaAleatoria() {
+    if (!reduzMovimento() && !animando && (cena === "aguardando" || cena === "resultado")) {
+      var m = cena === "aguardando" ? $("#cena-aguardando .marca") : $("#vencedor");
+      if (m && !$("#cena-resultado").classList.contains("acender")) { m.classList.remove("piscar"); void m.offsetWidth; m.classList.add("piscar"); }
+    }
+    setTimeout(tremidaAleatoria, 6000 + Math.random() * 9000);
+  }
+  setTimeout(tremidaAleatoria, 4000);
+
+  // ---------- tela cheia e cursor ----------
+  function telaCheia() {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function () {});
+  }
+  document.addEventListener("keydown", function (e) { if (e.key === "f" || e.key === "F") telaCheia(); });
+  document.addEventListener("dblclick", telaCheia);
+  var cursorTimer;
+  document.addEventListener("mousemove", function () {
+    document.body.classList.remove("sem-cursor");
+    clearTimeout(cursorTimer);
+    cursorTimer = setTimeout(function () { document.body.classList.add("sem-cursor"); }, 2500);
+  });
+
+  setInterval(ciclo, 200);
+})();
+</script>
+</body>
+</html>
